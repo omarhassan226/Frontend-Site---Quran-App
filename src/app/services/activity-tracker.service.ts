@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 export type ActivityAction =
   | 'PAGE_VIEW'
@@ -17,7 +18,7 @@ export type ActivityAction =
 })
 export class ActivityTrackerService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5000/api/activity/log';
+  private apiUrl = `${environment.apiUrl}/activity/log`;
   private visitorId: string;
 
   constructor() {

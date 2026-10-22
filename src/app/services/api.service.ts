@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { Surah, SurahDetail, Reciter } from '../models/quran.model';
 import { Hadith } from '../models/hadith.model';
 import { Zikr } from '../models/zikr.model';
@@ -12,8 +13,7 @@ import { Memorial } from '../models/memorial.model';
 })
 export class ApiService {
   private http = inject(HttpClient);
-  // Default to localhost:5000/api, can be overridden if deployed
-  private baseUrl = 'http://localhost:5000/api';
+  private baseUrl = environment.apiUrl;
 
   // ==================== QURAN ====================
   getSurahs(): Observable<{ success: boolean; data: Surah[] }> {
