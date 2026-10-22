@@ -1,0 +1,478 @@
+/* ==========================================================================
+   نور وهُدى - نظام التصميم الإيماني الحديث (Islamic Design System)
+   ========================================================================== */
+
+:root {
+  /* Color Palette */
+  --primary-emerald: #059669;
+  --primary-emerald-dark: #064e3b;
+  --primary-emerald-light: #10b981;
+  --primary-emerald-glow: rgba(16, 185, 129, 0.25);
+  
+  --gold-accent: #d97706;
+  --gold-light: #fbbf24;
+  --gold-glow: rgba(245, 158, 11, 0.2);
+  
+  --bg-deep: #090e17;
+  --bg-surface: #0f172a;
+  --bg-surface-elevated: #1e293b;
+  --bg-surface-glass: rgba(15, 23, 42, 0.75);
+  --bg-footer: #060a12;
+  --bg-navbar: rgba(9, 14, 23, 0.88);
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-emerald: rgba(16, 185, 129, 0.25);
+  --border-gold: rgba(217, 119, 6, 0.3);
+  
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-gold: #fde68a;
+  --text-emerald: #6ee7b7;
+  
+  /* Fonts */
+  --font-ui: 'Cairo', system-ui, -apple-system, sans-serif;
+  --font-quran: 'Amiri Quran', 'Amiri', serif;
+  --font-hadith: 'Amiri', 'Cairo', serif;
+  
+  /* Radii & Shadows */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 35px var(--primary-emerald-glow);
+  --shadow-gold-glow: 0 0 30px var(--gold-glow);
+}
+
+/* Light Mode Overrides */
+body.light-theme {
+  --bg-deep: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f1f5f9;
+  --bg-surface-glass: rgba(255, 255, 255, 0.92);
+  --bg-footer: #ffffff;
+  --bg-navbar: rgba(255, 255, 255, 0.95);
+  --border-subtle: rgba(15, 23, 42, 0.1);
+  --border-emerald: rgba(5, 150, 105, 0.35);
+  --border-gold: rgba(217, 119, 6, 0.35);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-gold: #b45309;
+  --text-emerald: #047857;
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.12);
+  --shadow-glow: 0 0 25px rgba(5, 150, 105, 0.15);
+  --shadow-gold-glow: 0 0 25px rgba(217, 119, 6, 0.15);
+}
+
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  direction: rtl;
+}
+
+body {
+  font-family: var(--font-ui);
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  line-height: 1.7;
+  direction: rtl;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Subtle spiritual background glow & geometric motif */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(5, 150, 105, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(217, 119, 6, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.3) 0%, transparent 80%);
+  pointer-events: none;
+  z-index: -1;
+  transition: background 0.3s ease;
+}
+
+body.light-theme::before {
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(217, 119, 6, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(241, 245, 249, 0.6) 0%, transparent 80%);
+}
+
+/* Quranic and Hadith texts strictly maintain Arabic script and calligraphy */
+.font-quran,
+.font-hadith,
+.surah-calligraphy,
+.ayah-text,
+.hadith-arabic-text {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+/* Links & Buttons */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-full);
+  border: 2px solid var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-emerald);
+}
+
+/* Typography Helpers */
+.font-quran {
+  font-family: var(--font-quran) !important;
+  line-height: 2.2 !important;
+}
+
+.font-hadith {
+  font-family: var(--font-hadith) !important;
+  line-height: 2.0 !important;
+}
+
+/* Utility Containers (Generous & Roomy) */
+.container {
+  width: 100%;
+  max-width: 1580px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.container-fluid {
+  width: 100%;
+  max-width: 1580px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Card Styles */
+.card-glass {
+  background: var(--bg-surface-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.card-glass:hover {
+  border-color: var(--border-emerald);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.badge-emerald {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-gold {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-blue {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-purple {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--primary-emerald), #047857);
+  color: #ffffff;
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #10b981, var(--primary-emerald));
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: #ffffff;
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-muted);
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+  }
+}
+
+.animate-glow {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+/* Ayat Decorative Symbol */
+.ayah-number-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold-accent);
+  color: var(--gold-light);
+  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  font-weight: bold;
+  margin: 0 6px;
+  background: rgba(217, 119, 6, 0.1);
+}
+
+/* Light Mode Overrides for Components */
+body.light-theme .card-glass {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+}
+
+body.light-theme .card-glass:hover {
+  border-color: var(--primary-emerald);
+  box-shadow: 0 10px 30px rgba(5, 150, 105, 0.12);
+}
+
+body.light-theme input,
+body.light-theme select,
+body.light-theme textarea {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+}
+
+body.light-theme input::placeholder {
+  color: #64748b !important;
+}
+
+body.light-theme .audio-dock-wrapper {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-top-color: rgba(5, 150, 105, 0.3);
+  box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.12) !important;
+}
+
+body.light-theme .btn-ghost {
+  background: rgba(15, 23, 42, 0.04);
+  color: #1e293b;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+body.light-theme .btn-ghost:hover {
+  background: rgba(15, 23, 42, 0.08);
+  border-color: var(--primary-emerald);
+}
+
+body.light-theme .quick-tag {
+  background: rgba(15, 23, 42, 0.04) !important;
+  color: #334155 !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+body.light-theme .quick-tag:hover {
+  background: rgba(5, 150, 105, 0.1) !important;
+  color: #047857 !important;
+}
+
+/* ==========================================================================
+   Global Footer & Navbar Light Theme Overrides (Unencapsulated)
+   ========================================================================== */
+body.light-theme .footer-wrapper {
+  background: #ffffff !important;
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.03) !important;
+}
+
+body.light-theme .footer-wrapper .memorial-callout {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(248, 250, 252, 0.95)) !important;
+  border-color: rgba(5, 150, 105, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(5, 150, 105, 0.06) !important;
+}
+
+body.light-theme .footer-wrapper .memorial-badge {
+  background: rgba(217, 119, 6, 0.12) !important;
+  color: #b45309 !important;
+}
+
+body.light-theme .footer-wrapper .memorial-headline {
+  color: #064e3b !important;
+}
+
+body.light-theme .footer-wrapper .memorial-desc {
+  color: #1e293b !important;
+}
+
+body.light-theme .footer-wrapper .footer-grid {
+  border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-theme .footer-wrapper .brand-col .brand-title,
+body.light-theme .footer-wrapper .col-title {
+  color: #0f172a !important;
+}
+
+body.light-theme .footer-wrapper .brand-col .brand-text,
+body.light-theme .footer-wrapper .col-links a {
+  color: #475569 !important;
+}
+
+body.light-theme .footer-wrapper .col-links a:hover {
+  color: #059669 !important;
+}
+
+body.light-theme .footer-wrapper .footer-bottom {
+  color: #64748b !important;
+}
+
+/* Navbar Global Light Mode */
+body.light-theme .navbar-wrapper {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+}
+
+body.light-theme .navbar-wrapper .brand-title {
+  color: #0f172a !important;
+}
+
+body.light-theme .navbar-wrapper .brand-subtitle {
+  color: #64748b !important;
+}
+
+body.light-theme .navbar-wrapper .nav-links a {
+  color: #475569 !important;
+}
+
+body.light-theme .navbar-wrapper .nav-links a:hover {
+  background: rgba(15, 23, 42, 0.05) !important;
+  color: #059669 !important;
+}
+
+body.light-theme .navbar-wrapper .nav-links a.active {
+  color: #047857 !important;
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+body.light-theme .navbar-wrapper .theme-toggle-btn {
+  background: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+
