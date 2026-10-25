@@ -145,47 +145,158 @@ import { SurahDetail, Reciter, Ayah, Surah } from '../../models/quran.model';
           <h1 class="surah-title font-quran">{{ surah.name }}</h1>
           <p class="surah-english-title">{{ surah.englishName }} ({{ surah.englishNameTranslation }})</p>
 
-          <!-- Audio & View Controls Bar -->
+          <!-- Comprehensive Quran Reading & Audio Command Hub -->
           <div class="audio-selection-toolbar">
-            <div class="reciter-picker">
-              <label for="reciter-select"><i class="fa-solid fa-microphone-lines"></i> اختيار القارئ:</label>
-              <select
-                id="reciter-select"
-                [(ngModel)]="selectedReciter"
-                (change)="onReciterChange()"
-                class="reciter-select"
-              >
-                @for (rec of reciters; track rec.id) {
-                  <option [value]="rec.id">{{ rec.name }} ({{ rec.style }})</option>
-                }
-              </select>
+            <!-- Row 1: Surah Switching Hub & Reciter Selection -->
+            <div class="toolbar-row toolbar-selectors-row">
+              <!-- Surah Switcher with Quick Pagers -->
+              <div class="toolbar-group surah-switcher-group">
+                <button
+                  type="button"
+                  class="btn-pager-mini"
+                  [disabled]="surah.number <= 1"
+                  (click)="navigateToSurah(surah.number - 1)"
+                  [title]="surah.number > 1 ? 'السورة السابقة: ' + getSurahName(surah.number - 1) : 'لا توجد سورة سابقة'"
+                >
+                  <i class="fa-solid fa-chevron-right"></i>
+                  <span class="pager-mini-label">السابقة</span>
+                </button>
+
+                <div class="select-field-wrap">
+                  <label for="toolbar-surah-select">
+                    <i class="fa-solid fa-book-quran"></i>
+                    <span>السورة:</span>
+                  </label>
+                  <select
+                    id="toolbar-surah-select"
+                    class="toolbar-select surah-main-select"
+                    [ngModel]="surah.number"
+                    (ngModelChange)="navigateToSurah($event)"
+                    title="اختر أي سورة من الـ 114 سورة"
+                  >
+                    @for (s of allSurahs; track s.number) {
+                      <option [value]="s.number">
+                        {{ s.number }}. {{ s.name }} ({{ s.numberOfAyahs }} آية - {{ s.revelationType === 'Meccan' ? 'مكية' : 'مدنية' }})
+                      </option>
+                    }
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn-pager-mini"
+                  [disabled]="surah.number >= 114"
+                  (click)="navigateToSurah(surah.number + 1)"
+                  [title]="surah.number < 114 ? 'السورة التالية: ' + getSurahName(surah.number + 1) : 'لا توجد سورة تالية'"
+                >
+                  <span class="pager-mini-label">التالية</span>
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+              </div>
+
+              <!-- Reciter Selection -->
+              <div class="toolbar-group reciter-picker-group">
+                <div class="select-field-wrap">
+                  <label for="reciter-select">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                    <span>القارئ:</span>
+                  </label>
+                  <select
+                    id="reciter-select"
+                    [(ngModel)]="selectedReciter"
+                    (change)="onReciterChange()"
+                    class="toolbar-select reciter-main-select"
+                  >
+                    @for (rec of reciters; track rec.id) {
+                      <option [value]="rec.id">{{ rec.name }} ({{ rec.style }})</option>
+                    }
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div class="toolbar-actions">
-              <button class="btn-primary" (click)="playFullSurah()">
-                <i class="fa-solid fa-play"></i>
-                <span>استماع للسورة كاملة</span>
-              </button>
+            <!-- Visual Divider -->
+            <div class="toolbar-divider"></div>
 
-              <button class="btn-ghost view-toggle-btn" (click)="toggleViewMode()">
-                <i class="fa-solid" [class.fa-book]="viewMode === 'list'" [class.fa-list-ol]="viewMode === 'mushaf'"></i>
-                <span>{{ viewMode === 'list' ? 'نمط المصحف المتصل' : 'نمط الآيات المنفصلة' }}</span>
-              </button>
-
-              <button class="btn-ghost" (click)="shareSurah()" title="مشاركة رابط السورة الكريمة">
-                <i class="fa-solid fa-share-nodes"></i>
-                <span>مشاركة السورة</span>
-              </button>
-
-              <button
-                class="btn-ghost"
-                [class.btn-bookmarked]="isSurahBookmarked()"
-                (click)="toggleSurahBookmark()"
-                [title]="isSurahBookmarked() ? 'إزالة السورة من المحفوظات' : 'حفظ السورة في المفضلة'"
+            <!-- Row 2: Playback, View Mode, Font Size, Jump to Ayah, Actions -->
+            <div class="toolbar-row toolbar-controls-row">
+              <!-- Play / Pause Full Surah Toggle -->
+              <button 
+                class="btn-primary toolbar-play-btn" 
+                [class.btn-playing]="isCurrentSurahPlaying()" 
+                (click)="togglePlaySurah()"
+                title="استماع للسورة كاملة أو إيقاف التلاوة مؤقتاً"
               >
-                <i class="fa-solid" [class.fa-bookmark]="isSurahBookmarked()" [class.fa-bookmark-regular]="!isSurahBookmarked()"></i>
-                <span>{{ isSurahBookmarked() ? 'محفوظة بالمفضلة' : 'حفظ السورة' }}</span>
+                <i class="fa-solid" [class.fa-pause]="isCurrentSurahPlaying()" [class.fa-play]="!isCurrentSurahPlaying()"></i>
+                <span>{{ isCurrentSurahPlaying() ? 'إيقاف التلاوة' : 'استماع للسورة كاملة' }}</span>
               </button>
+
+              <!-- View Mode Toggle -->
+              <button 
+                class="btn-ghost view-toggle-btn" 
+                (click)="toggleViewMode()" 
+                [title]="viewMode === 'list' ? 'التحويل إلى نمط المصحف المتصل' : 'التحويل إلى نمط الآيات المنفصلة'"
+              >
+                <i class="fa-solid" [class.fa-book-open]="viewMode === 'list'" [class.fa-list-ol]="viewMode === 'mushaf'"></i>
+                <span>{{ viewMode === 'list' ? 'نمط المصحف' : 'نمط الآيات' }}</span>
+              </button>
+
+              <!-- Jump to Ayah Dropdown -->
+              <div class="jump-ayah-group">
+                <label for="jump-ayah-select" title="انتقال مباشر لرقم آية">
+                  <i class="fa-solid fa-location-crosshairs"></i>
+                  <span>الآية:</span>
+                </label>
+                <select
+                  id="jump-ayah-select"
+                  class="toolbar-select jump-select"
+                  [ngModel]="selectedAyahJump"
+                  (ngModelChange)="jumpToAyah($event)"
+                >
+                  <option [value]="undefined" disabled>انتقال لآية...</option>
+                  @for (ayah of surah.ayahs; track ayah.numberInSurah) {
+                    <option [value]="ayah.numberInSurah">آية {{ ayah.numberInSurah }}</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Font Size Controls -->
+              <div class="font-size-toolbar-group" title="التحكم بحجم خط المصحف والآيات">
+                <button type="button" class="btn-font-action" (click)="decreaseFontSize()" title="تصغير الخط">
+                  <i class="fa-solid fa-minus"></i>
+                  <span>A</span>
+                </button>
+                <button type="button" class="btn-font-value" (click)="resetFontSize()" title="حجم الخط الحالي (اضغط للعودة للحجم الافتراضي)">
+                  {{ fontSize }}px
+                </button>
+                <button type="button" class="btn-font-action" (click)="increaseFontSize()" title="تكبير الخط">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>A</span>
+                </button>
+              </div>
+
+              <!-- Actions: Copy Full Text, Share, Bookmark -->
+              <div class="secondary-actions-cluster">
+                <button class="btn-ghost" (click)="copyFullSurah()" title="نسخ نص السورة الكريمة كاملاً">
+                  <i class="fa-solid fa-copy"></i>
+                  <span class="btn-action-text">نسخ السورة</span>
+                </button>
+
+                <button class="btn-ghost" (click)="shareSurah()" title="مشاركة رابط السورة الكريمة">
+                  <i class="fa-solid fa-share-nodes"></i>
+                  <span class="btn-action-text">مشاركة</span>
+                </button>
+
+                <button
+                  class="btn-ghost"
+                  [class.btn-bookmarked]="isSurahBookmarked()"
+                  (click)="toggleSurahBookmark()"
+                  [title]="isSurahBookmarked() ? 'إزالة السورة من المحفوظات' : 'حفظ السورة في المفضلة'"
+                >
+                  <i class="fa-solid" [class.fa-bookmark]="isSurahBookmarked()" [class.fa-bookmark-regular]="!isSurahBookmarked()"></i>
+                  <span class="btn-action-text">{{ isSurahBookmarked() ? 'محفوظة' : 'حفظ' }}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -199,10 +310,11 @@ import { SurahDetail, Reciter, Ayah, Surah } from '../../models/quran.model';
 
         <!-- Mushaf Continuous Reading Mode -->
         @if (viewMode === 'mushaf') {
-          <div class="mushaf-page-box card-glass font-quran">
-            <p class="mushaf-text">
+          <div class="mushaf-page-box card-glass font-quran" [style.fontSize.px]="fontSize" [style.lineHeight]="fontSize > 32 ? '2.8' : '2.5'">
+            <p class="mushaf-text" [style.fontSize.px]="fontSize">
               @for (ayah of surah.ayahs; track ayah.numberInSurah; let idx = $index) {
                 <span
+                  [id]="'ayah-item-' + ayah.numberInSurah"
                   class="mushaf-ayah-span"
                   [class.active-ayah]="player.currentAyah()?.number === ayah.number"
                   (click)="playAyah(ayah, idx)"
@@ -219,6 +331,7 @@ import { SurahDetail, Reciter, Ayah, Surah } from '../../models/quran.model';
           <div class="ayahs-list">
             @for (ayah of surah.ayahs; track ayah.numberInSurah; let idx = $index) {
               <div
+                [id]="'ayah-item-' + ayah.numberInSurah"
                 class="ayah-card card-glass"
                 [class.playing-ayah-card]="player.currentAyah()?.number === ayah.number"
               >
@@ -257,7 +370,7 @@ import { SurahDetail, Reciter, Ayah, Surah } from '../../models/quran.model';
                   </div>
                 </div>
 
-                <div class="ayah-body font-quran">
+                <div class="ayah-body font-quran" [style.fontSize.px]="fontSize">
                   {{ cleanAyahText(ayah.text, surah.number, ayah.numberInSurah) }}
                 </div>
               </div>
@@ -597,46 +710,227 @@ import { SurahDetail, Reciter, Ayah, Surah } from '../../models/quran.model';
       margin-bottom: 25px;
     }
 
-    /* Toolbar */
+    /* Comprehensive Quran Toolbar */
     .audio-selection-toolbar {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid var(--border-emerald);
+      border-radius: var(--radius-xl);
+      padding: 16px 22px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 1250px;
+      margin: 0 auto;
+      transition: all 0.3s ease;
+    }
+
+    .toolbar-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 16px;
-      background: rgba(15, 23, 42, 0.7);
-      padding: 14px 20px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-subtle);
-      max-width: 1250px;
-      margin: 0 auto;
+      gap: 12px;
     }
 
-    .reciter-picker {
+    .toolbar-divider {
+      height: 1px;
+      background: var(--border-subtle);
+      width: 100%;
+      margin: 2px 0;
+    }
+
+    .toolbar-group {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 0.9rem;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .select-field-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
       color: var(--text-muted);
     }
 
-    .reciter-select {
+    .select-field-wrap label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .select-field-wrap label i {
+      color: var(--primary-emerald-light);
+    }
+
+    .toolbar-select {
       background: var(--bg-surface-elevated);
       color: var(--text-main);
-      border: 1px solid var(--border-subtle);
+      border: 1.5px solid var(--border-subtle);
       padding: 8px 14px;
       border-radius: var(--radius-md);
       font-family: inherit;
       font-size: 0.9rem;
+      font-weight: 600;
       outline: none;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    .toolbar-actions {
-      display: flex;
+    .toolbar-select:hover,
+    .toolbar-select:focus {
+      border-color: var(--primary-emerald);
+      box-shadow: 0 0 12px var(--primary-emerald-glow);
+    }
+
+    .surah-main-select {
+      min-width: 200px;
+      max-width: 320px;
+    }
+
+    .reciter-main-select {
+      min-width: 190px;
+    }
+
+    .btn-pager-mini {
+      display: inline-flex;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-pager-mini:hover:not(:disabled) {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--primary-emerald);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-pager-mini:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .toolbar-play-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .toolbar-play-btn.btn-playing {
+      background: linear-gradient(135deg, #d97706, #b45309) !important;
+      box-shadow: 0 0 20px rgba(217, 119, 6, 0.45) !important;
+    }
+
+    .jump-ayah-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .jump-ayah-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+    }
+
+    .jump-ayah-group label i {
+      color: var(--gold-light);
+    }
+
+    .jump-select {
+      padding: 7px 12px;
+      min-width: 120px;
+    }
+
+    /* Font Size Controls Group */
+    .font-size-toolbar-group {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .btn-font-action {
+      padding: 6px 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-font-action:hover {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--primary-emerald-light);
+    }
+
+    .btn-font-value {
+      padding: 6px 10px;
+      background: rgba(0, 0, 0, 0.25);
+      border: none;
+      border-left: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      color: var(--gold-light);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      min-width: 48px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-font-value:hover {
+      color: #ffffff;
+      background: rgba(16, 185, 129, 0.25);
+    }
+
+    .secondary-actions-cluster {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Jump to Ayah Highlight Animation */
+    .jump-highlight {
+      animation: ayahHighlightAnim 2.2s ease-out;
+      border-radius: var(--radius-md);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.7) !important;
+    }
+
+    @keyframes ayahHighlightAnim {
+      0% {
+        background-color: rgba(16, 185, 129, 0.45);
+      }
+      100% {
+        background-color: transparent;
+      }
     }
 
     /* Bismillah */
@@ -785,18 +1079,56 @@ import { SurahDetail, Reciter, Ayah, Surah } from '../../models/quran.model';
 
     :host-context(.light-theme) .audio-selection-toolbar {
       background: #ffffff;
-      border-color: rgba(15, 23, 42, 0.12);
-      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+      border-color: rgba(5, 150, 105, 0.28);
+      box-shadow: 0 10px 35px rgba(15, 23, 42, 0.07);
     }
 
-    :host-context(.light-theme) .reciter-picker {
-      color: #334155;
+    :host-context(.light-theme) .toolbar-divider {
+      background: rgba(15, 23, 42, 0.08);
     }
 
-    :host-context(.light-theme) .reciter-select {
+    :host-context(.light-theme) .select-field-wrap label,
+    :host-context(.light-theme) .jump-ayah-group label {
+      color: #475569;
+    }
+
+    :host-context(.light-theme) .toolbar-select {
       background: #f8fafc;
       color: #0f172a;
       border-color: rgba(15, 23, 42, 0.15);
+    }
+
+    :host-context(.light-theme) .toolbar-select:hover,
+    :host-context(.light-theme) .toolbar-select:focus {
+      border-color: #059669;
+      background: #ffffff;
+    }
+
+    :host-context(.light-theme) .btn-pager-mini {
+      background: #f1f5f9;
+      border-color: rgba(15, 23, 42, 0.12);
+      color: #1e293b;
+    }
+
+    :host-context(.light-theme) .btn-pager-mini:hover:not(:disabled) {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: #059669;
+      color: #047857;
+    }
+
+    :host-context(.light-theme) .font-size-toolbar-group {
+      background: #f1f5f9;
+      border-color: rgba(15, 23, 42, 0.15);
+    }
+
+    :host-context(.light-theme) .btn-font-action {
+      color: #1e293b;
+    }
+
+    :host-context(.light-theme) .btn-font-value {
+      background: #ffffff;
+      color: #b45309;
+      border-color: rgba(15, 23, 42, 0.1);
     }
 
     :host-context(.light-theme) .bismillah-text {
@@ -946,13 +1278,85 @@ import { SurahDetail, Reciter, Ayah, Surah } from '../../models/quran.model';
       }
     }
 
-    @media (max-width: 768px) {
-      .audio-selection-toolbar {
+    @media (max-width: 900px) {
+      .toolbar-row {
         flex-direction: column;
         align-items: stretch;
+        gap: 10px;
       }
-      .toolbar-actions {
+
+      .toolbar-group {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .surah-switcher-group {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .surah-switcher-group .select-field-wrap {
+        flex: 1;
+      }
+
+      .surah-main-select {
+        max-width: none;
+        width: 100%;
+      }
+
+      .reciter-picker-group {
+        width: 100%;
+      }
+
+      .reciter-picker-group .select-field-wrap {
+        width: 100%;
+      }
+
+      .reciter-main-select {
+        width: 100%;
+      }
+
+      .secondary-actions-cluster {
+        display: flex;
+        width: 100%;
+        gap: 6px;
+      }
+
+      .secondary-actions-cluster .btn-ghost {
+        flex: 1;
         justify-content: center;
+        padding: 8px 6px;
+        font-size: 0.85rem;
+      }
+
+      .font-size-toolbar-group {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .font-size-toolbar-group .btn-font-value {
+        flex: 1;
+        text-align: center;
+      }
+
+      .jump-ayah-group {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .jump-ayah-group .jump-select {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .audio-selection-toolbar {
+        padding: 14px;
+      }
+      .pager-mini-label {
+        display: none;
       }
       .mushaf-text {
         font-size: 1.45rem;
@@ -981,6 +1385,8 @@ export class SurahDetailComponent implements OnInit {
   selectedReciter = 'ar.alafasy';
   loading = true;
   viewMode: 'mushaf' | 'list' = 'mushaf';
+  fontSize = 28;
+  selectedAyahJump: number | undefined = undefined;
 
   ngOnInit() {
     this.loadReciters();
@@ -1199,5 +1605,54 @@ export class SurahDetailComponent implements OnInit {
       subtitle: `سورة ${this.surah.name}`,
       type: 'surah',
     });
+  }
+
+  isCurrentSurahPlaying(): boolean {
+    return this.player.isPlaying() && this.player.currentSurah()?.number === this.surah?.number;
+  }
+
+  togglePlaySurah() {
+    if (this.isCurrentSurahPlaying()) {
+      this.player.togglePlay();
+    } else {
+      this.playFullSurah();
+    }
+  }
+
+  jumpToAyah(ayahNum: number) {
+    if (!ayahNum) return;
+    this.selectedAyahJump = ayahNum;
+    setTimeout(() => {
+      const el = document.getElementById(`ayah-item-${ayahNum}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('jump-highlight');
+        setTimeout(() => el.classList.remove('jump-highlight'), 2200);
+      }
+    }, 50);
+  }
+
+  increaseFontSize() {
+    if (this.fontSize < 46) {
+      this.fontSize += 2;
+    }
+  }
+
+  decreaseFontSize() {
+    if (this.fontSize > 18) {
+      this.fontSize -= 2;
+    }
+  }
+
+  resetFontSize() {
+    this.fontSize = 28;
+  }
+
+  copyFullSurah() {
+    if (!this.surah || !this.surah.ayahs) return;
+    const bismillah = (this.surah.number !== 1 && this.surah.number !== 9) ? 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ\n\n' : '';
+    const text = bismillah + this.surah.ayahs.map(a => `${this.cleanAyahText(a.text, this.surah!.number, a.numberInSurah)} (${a.numberInSurah})`).join(' ');
+    navigator.clipboard.writeText(`سورة ${this.surah.name}\n\n${text}`);
+    alert(`تم نسخ سورة ${this.surah.name} الكريمة كاملة بنجاح 📋`);
   }
 }
