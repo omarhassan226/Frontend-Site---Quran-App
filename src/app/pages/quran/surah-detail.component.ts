@@ -702,12 +702,14 @@ import { SurahDetail, Reciter, Ayah, Surah } from '../../models/quran.model';
       color: var(--text-gold);
       margin-bottom: 6px;
       line-height: 1.4;
+      text-align: center !important;
     }
 
     .surah-english-title {
       color: var(--text-muted);
       font-size: 0.95rem;
       margin-bottom: 25px;
+      text-align: center !important;
     }
 
     /* Comprehensive Quran Toolbar */
