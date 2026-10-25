@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { ActivityTrackerService } from '../../services/activity-tracker.service';
 import { Hadith } from '../../models/hadith.model';
 import { Reflection } from '../../models/reflection.model';
 import { Memorial } from '../../models/memorial.model';
@@ -88,9 +89,13 @@ import { Memorial } from '../../models/memorial.model';
               <span class="box-label">مجموع التسبيحات في المنصة</span>
               <span class="box-number">{{ memorial?.tasbeehCount || 0 }}</span>
               <span class="box-sub">تسبيحة مهداة في ميزان حسناتها</span>
-              <a routerLink="/memorial" class="link-more-duas">
-                <span>المزيد من الأدعية والختمات</span>
-                <i class="fa-solid fa-arrow-left"></i>
+              <button class="btn-quick-tasbeeh" (click)="incrementSubha()">
+                <i class="fa-solid fa-fingerprint"></i>
+                <span>تسبيحة سريعة +1</span>
+              </button>
+              <a href="#home-masbaha" class="link-more-duas">
+                <span>المسبحة التفاعلية أدناه</span>
+                <i class="fa-solid fa-arrow-down"></i>
               </a>
             </div>
           </div>
@@ -153,6 +158,74 @@ import { Memorial } from '../../models/memorial.model';
               </div>
             </div>
           }
+        </div>
+      </section>
+
+      <!-- Interactive Digital Masbaha Section (المسبحة الإلكترونية التفاعلية) -->
+      <section id="home-masbaha" class="masbaha-section container">
+        <div class="masbaha-card card-glass">
+          <div class="masbaha-header">
+            <span class="badge badge-emerald">
+              <i class="fa-solid fa-bead-necklace"></i> المسبحة الإلكترونية التفاعلية
+            </span>
+            <h2 class="masbaha-title">سبّح واذكر الله واهدِ ثوابه</h2>
+            <p class="masbaha-desc">
+              كل تسبيحة تضغطها تُسجل فوراً في ميزان حسنات الصدقة الجارية وتثقل الموازين بإذن الله.
+            </p>
+          </div>
+
+          <!-- Phrase Selector Chips -->
+          <div class="subha-phrases-grid">
+            @for (phrase of subhaPhrases; track phrase) {
+              <button
+                class="subha-chip-btn"
+                [class.active]="selectedPhrase === phrase"
+                (click)="selectPhrase(phrase)"
+              >
+                {{ phrase }}
+              </button>
+            }
+          </div>
+
+          <!-- Interactive Ring Counter -->
+          <div class="masbaha-ring-wrap">
+            <div
+              class="subha-ring-button"
+              [class.clicked]="isSubhaAnimating"
+              (click)="incrementSubha()"
+              role="button"
+              tabindex="0"
+              aria-label="تسبيح"
+            >
+              <span class="subha-number">{{ currentSubhaCount }}</span>
+              <span class="subha-cycle-badge">
+                <i class="fa-solid fa-rotate"></i> الدورة {{ getCycleNumber() }} ({{ currentSubhaCount % 33 }}/33)
+              </span>
+              <span class="subha-tap-hint">
+                <i class="fa-solid fa-fingerprint"></i> اضغط للتسبيح
+              </span>
+            </div>
+          </div>
+
+          <!-- Current Phrase Display -->
+          <div class="subha-active-display">
+            <p class="subha-current-phrase font-hadith">{{ selectedPhrase }}</p>
+          </div>
+
+          <!-- Subha Footer Actions -->
+          <div class="subha-bottom-actions">
+            <button class="btn-ghost" (click)="resetSubha()" title="تصفير عداد هذه الجلسة">
+              <i class="fa-solid fa-rotate-right"></i> تصفير المسبحة
+            </button>
+            <div class="subha-platform-counter">
+              <i class="fa-solid fa-heart-pulse"></i>
+              <span>إجمالي تسبيحات المنصة: <strong>{{ memorial?.tasbeehCount || 0 }}</strong></span>
+            </div>
+            <button class="btn-ghost" (click)="nextPhrase()" title="الانتقال للذكر التالي">
+              <span>الذكر التالي</span>
+              <i class="fa-solid fa-forward-step"></i>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -407,7 +480,7 @@ import { Memorial } from '../../models/memorial.model';
     .btn-pray-now {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       background: linear-gradient(135deg, #e11d48, #9f1239);
       color: #ffffff;
       padding: 12px 24px;
@@ -838,11 +911,307 @@ import { Memorial } from '../../models/memorial.model';
       .daily-grid {
         grid-template-columns: 1fr;
       }
+      .masbaha-card {
+        padding: 30px 18px;
+      }
+      .subha-ring-button {
+        width: 180px;
+        height: 180px;
+      }
+      .subha-number {
+        font-size: 3.2rem;
+      }
+    }
+
+    /* Quick Tasbeeh Button in Hero Memorial Banner */
+    .btn-quick-tasbeeh {
+      margin-top: 10px;
+      margin-bottom: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--primary-emerald), #059669);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-quick-tasbeeh:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-quick-tasbeeh:active {
+      transform: scale(0.96);
+    }
+
+    /* Dedicated Masbaha Section on Home Page */
+    .masbaha-section {
+      margin-bottom: 70px;
+    }
+
+    .masbaha-card {
+      padding: 40px 30px;
+      border-radius: var(--radius-xl);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.25), rgba(15, 23, 42, 0.92));
+      border: 1.5px solid var(--border-emerald);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .masbaha-header {
+      margin-bottom: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .masbaha-title {
+      font-size: 2.1rem;
+      font-weight: 900;
+      color: var(--text-main);
+      margin: 12px 0 8px 0;
+    }
+
+    .masbaha-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      line-height: 1.6;
+    }
+
+    /* Phrase Selection Grid */
+    .subha-phrases-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 35px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .subha-chip-btn {
+      padding: 9px 20px;
+      border-radius: var(--radius-full);
+      font-size: 0.92rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .subha-chip-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .subha-chip-btn.active {
+      background: linear-gradient(135deg, var(--primary-emerald), #047857);
+      color: #ffffff;
+      border-color: var(--primary-emerald-light);
+      box-shadow: 0 4px 15px var(--primary-emerald-glow);
+    }
+
+    /* Subha Ring Button */
+    .masbaha-ring-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+
+    .subha-ring-button {
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #0f172a 30%, #064e3b 85%, #047857 100%);
+      border: 5px solid var(--primary-emerald);
+      box-shadow: 0 0 40px var(--primary-emerald-glow), inset 0 0 20px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+    }
+
+    .subha-ring-button:hover {
+      box-shadow: 0 0 55px rgba(16, 185, 129, 0.55), inset 0 0 25px rgba(16, 185, 129, 0.2);
+      transform: scale(1.04);
+    }
+
+    .subha-ring-button:active,
+    .subha-ring-button.clicked {
+      transform: scale(0.94);
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
+    }
+
+    .subha-number {
+      font-size: 3.8rem;
+      font-weight: 900;
+      color: #a7f3d0;
+      line-height: 1;
+      text-shadow: 0 2px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .subha-cycle-badge {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .subha-tap-hint {
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      margin-top: 6px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Active Display */
+    .subha-active-display {
+      margin-bottom: 25px;
+      padding: 12px 24px;
+      display: inline-block;
+      border-radius: var(--radius-full);
+      background: rgba(217, 119, 6, 0.12);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+    }
+
+    .subha-current-phrase {
+      font-size: 1.45rem;
+      color: var(--text-gold);
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    /* Subha Bottom Actions */
+    .subha-bottom-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 22px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .subha-platform-counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .subha-platform-counter i {
+      color: #ef4444;
+    }
+
+    .subha-platform-counter strong {
+      color: var(--text-emerald);
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+
+    /* Light Theme Overrides for Masbaha */
+    :host-context(.light-theme) .btn-quick-tasbeeh {
+      background: linear-gradient(135deg, #059669, #047857);
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+    }
+
+    :host-context(.light-theme) .masbaha-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.07), #ffffff);
+      border-color: rgba(5, 150, 105, 0.25);
+      box-shadow: 0 10px 40px rgba(5, 150, 105, 0.08);
+    }
+
+    :host-context(.light-theme) .masbaha-title {
+      color: #0f172a;
+    }
+
+    :host-context(.light-theme) .masbaha-desc {
+      color: #475569;
+    }
+
+    :host-context(.light-theme) .subha-chip-btn {
+      background: #f1f5f9;
+      color: #475569;
+      border-color: rgba(15, 23, 42, 0.1);
+    }
+
+    :host-context(.light-theme) .subha-chip-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    :host-context(.light-theme) .subha-chip-btn.active {
+      background: #059669;
+      color: #ffffff;
+      border-color: #059669;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+    }
+
+    :host-context(.light-theme) .subha-ring-button {
+      background: radial-gradient(circle at 35% 35%, #ffffff 40%, #ecfdf5 85%, #d1fae5 100%);
+      border-color: #059669;
+      box-shadow: 0 0 35px rgba(5, 150, 105, 0.25);
+    }
+
+    :host-context(.light-theme) .subha-number {
+      color: #064e3b;
+      text-shadow: none;
+    }
+
+    :host-context(.light-theme) .subha-tap-hint {
+      color: #047857;
+    }
+
+    :host-context(.light-theme) .subha-cycle-badge {
+      color: #b45309;
+    }
+
+    :host-context(.light-theme) .subha-active-display {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    :host-context(.light-theme) .subha-current-phrase {
+      color: #92400e;
+    }
+
+    :host-context(.light-theme) .subha-platform-counter {
+      color: #475569;
+    }
+
+    :host-context(.light-theme) .subha-platform-counter strong {
+      color: #047857;
     }
   `]
 })
 export class HomeComponent implements OnInit {
   private api = inject(ApiService);
+  private tracker = inject(ActivityTrackerService);
   private router = inject(Router);
 
   searchQuery = '';
@@ -850,6 +1219,18 @@ export class HomeComponent implements OnInit {
   dailyReflection: Reflection | null = null;
   memorial: Memorial | null = null;
   hasPrayed = false;
+
+  subhaPhrases: string[] = [
+    'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
+    'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ',
+    'سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلاَ إِلَهَ إِلاَّ اللَّهُ، وَاللَّهُ أَكْبَرُ',
+    'لاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللَّهِ',
+    'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ',
+    'لاَ إِلَهَ إِلاَّ أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ',
+  ];
+  selectedPhrase = 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ';
+  currentSubhaCount = 0;
+  isSubhaAnimating = false;
 
   ngOnInit() {
     this.loadFeaturedData();
@@ -906,5 +1287,55 @@ export class HomeComponent implements OnInit {
   copyText(text: string) {
     navigator.clipboard.writeText(text);
     alert('تم نسخ النص بنجاح');
+  }
+
+  incrementSubha() {
+    this.currentSubhaCount++;
+    this.isSubhaAnimating = true;
+    setTimeout(() => {
+      this.isSubhaAnimating = false;
+    }, 150);
+
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate(35);
+      } catch (e) { }
+    }
+
+    if (this.memorial) {
+      this.memorial.tasbeehCount = (this.memorial.tasbeehCount || 0) + 1;
+    }
+
+    this.api.recordTasbeeh(1).subscribe({
+      next: (res) => {
+        if (this.memorial && res && res.tasbeehCount) {
+          this.memorial.tasbeehCount = res.tasbeehCount;
+        }
+      },
+    });
+
+    this.tracker.log('TASBEEH_CLICK', `تسبيحة في الصفحة الرئيسية: ${this.selectedPhrase}`, {
+      phrase: this.selectedPhrase,
+    });
+  }
+
+  selectPhrase(phrase: string) {
+    this.selectedPhrase = phrase;
+    this.currentSubhaCount = 0;
+  }
+
+  resetSubha() {
+    this.currentSubhaCount = 0;
+  }
+
+  nextPhrase() {
+    const currentIndex = this.subhaPhrases.indexOf(this.selectedPhrase);
+    const nextIndex = (currentIndex + 1) % this.subhaPhrases.length;
+    this.selectedPhrase = this.subhaPhrases[nextIndex];
+    this.currentSubhaCount = 0;
+  }
+
+  getCycleNumber(): number {
+    return Math.floor(this.currentSubhaCount / 33) + 1;
   }
 }
